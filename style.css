@@ -1,0 +1,920 @@
+/* Breeze & Bite Cafe - Modern Mobile Ordering Design System */
+:root {
+  --primary: #c25e2e;
+  --primary-light: #fbeee8;
+  --primary-dark: #9e4318;
+  --secondary: #2f5d50;
+  --bg-app: #f7f5f0;
+  --bg-card: #ffffff;
+  --text-main: #242220;
+  --text-muted: #78716c;
+  --text-light: #a8a29e;
+  --border-light: #ede8e1;
+  --accent-gold: #d97706;
+  --tag-bg: #f5f1ea;
+  --danger: #ef4444;
+  --success: #10b981;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(44, 30, 20, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+  background-color: #2b2826;
+  color: var(--text-main);
+  line-height: 1.5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* 模擬桌面展示視窗 vs 真實手機適配 */
+.phone-viewport {
+  width: 100%;
+  max-width: 440px;
+  height: 100vh;
+  height: 100dvh;
+  background-color: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+}
+
+@media (min-width: 500px) {
+  .phone-viewport {
+    height: 92vh;
+    max-height: 900px;
+    border-radius: 40px;
+    border: 8px solid #3d3936;
+    outline: 2px solid #57524e;
+  }
+}
+
+/* 頂部導航條與店鋪標頭 */
+.app-header {
+  background: #ffffff;
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.table-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  border: 1px solid rgba(194, 94, 46, 0.2);
+  transition: var(--transition);
+}
+.table-badge:active {
+  transform: scale(0.96);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: #f5f2ed;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--text-main);
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+.icon-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 17px;
+  height: 17px;
+  line-height: 17px;
+  text-align: center;
+  border-radius: var(--radius-full);
+  border: 2px solid #fff;
+}
+
+.restaurant-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: -0.3px;
+}
+
+.announcement-bar {
+  background: #faf6ee;
+  color: #855728;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 搜尋框 */
+.search-wrapper {
+  margin-top: 8px;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  height: 34px;
+  background: #f2eee8;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  padding: 0 14px 0 34px;
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+  transition: var(--transition);
+}
+.search-input:focus {
+  background: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(194, 94, 46, 0.12);
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+/* 分類導覽橫向滾動 (Sticky Navigation) */
+.category-nav-wrapper {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-light);
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  scrollbar-width: none;
+}
+.category-nav-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.category-nav {
+  display: inline-flex;
+  padding: 8px 12px;
+  gap: 8px;
+}
+
+.cat-chip {
+  background: #f3efe9;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.cat-chip.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(194, 94, 46, 0.28);
+}
+
+/* 菜單內容可滾動區域 */
+.menu-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px 100px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-section {
+  margin-bottom: 24px;
+}
+
+.category-header {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 2px;
+}
+
+/* 餐點卡片清單 */
+.dish-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dish-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  position: relative;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.dish-card:active {
+  transform: scale(0.985);
+  background: #fdfcfb;
+}
+
+.dish-img-box {
+  width: 95px;
+  height: 95px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  background: #e9e4dc;
+}
+
+.dish-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.dish-card:hover .dish-img {
+  transform: scale(1.06);
+}
+
+.dish-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.dish-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.dish-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.dish-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.tag-pill {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--tag-bg);
+  color: #7c6853;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dish-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.dish-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary);
+}
+.dish-price small {
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 1px;
+}
+
+.btn-add-spec {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(194, 94, 46, 0.25);
+  transition: var(--transition);
+}
+.btn-add-spec:active {
+  transform: scale(0.94);
+}
+
+/* 底部懸浮購物車條 (Floating Sticky Bar) */
+.floating-cart-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 14px;
+  right: 14px;
+  background: rgba(36, 34, 32, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: 10px 14px 10px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 30;
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 0.35s var(--ease-spring), opacity 0.25s ease;
+}
+
+.floating-cart-bar.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.cart-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.cart-icon-wrapper {
+  position: relative;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.cart-bubble {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 20px;
+  height: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  text-align: center;
+  border: 2px solid #242220;
+}
+
+.cart-bubble.bounce {
+  animation: jellyBounce 0.45s ease;
+}
+
+.cart-total-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-total-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cart-count-desc {
+  font-size: 11px;
+  color: #b8b2aa;
+}
+
+.btn-view-cart {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+}
+.btn-view-cart:active {
+  transform: scale(0.95);
+}
+
+/* 通用彈窗遮罩與底部抽屜 (Bottom Sheet) */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bottom-sheet {
+  background: #ffffff;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow: hidden;
+}
+
+.modal-overlay.open .bottom-sheet {
+  transform: translateY(0);
+}
+
+.sheet-handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #ded7ce;
+  border-radius: var(--radius-full);
+  margin: 10px auto 4px;
+  flex-shrink: 0;
+}
+
+.sheet-header {
+  padding: 10px 18px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.sheet-header-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.sheet-header-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.sheet-close-btn {
+  background: #f1ece4;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sheet-content {
+  padding: 16px 18px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 規格選擇群組樣式 */
+.option-group {
+  margin-bottom: 20px;
+}
+
+.group-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.group-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.group-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.option-pill-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-light);
+  background: #faf8f5;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.option-label input[type="radio"],
+.option-label input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.option-label.checked {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.option-price-diff {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* 單品備註輸入框 */
+.note-textarea {
+  width: 100%;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-light);
+  padding: 8px 12px;
+  font-size: 13px;
+  background: #faf8f5;
+  color: var(--text-main);
+  resize: none;
+  outline: none;
+}
+.note-textarea:focus {
+  border-color: var(--primary);
+  background: #fff;
+}
+
+/* 彈窗底部固定按鈕列 */
+.sheet-footer {
+  padding: 12px 18px 20px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  background: #f1ece4;
+  border-radius: var(--radius-full);
+  padding: 2px 4px;
+}
+
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qty-btn:active {
+  transform: scale(0.85);
+}
+
+.qty-num {
+  width: 28px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.btn-confirm-add {
+  flex: 1;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  height: 44px;
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(194, 94, 46, 0.3);
+  transition: var(--transition);
+}
+.btn-confirm-add:active {
+  transform: scale(0.97);
+}
+
+/* 購物車詳細清單樣式 */
+.cart-item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--border-light);
+}
+
+.cart-item-info {
+  flex: 1;
+  padding-right: 12px;
+}
+
+.cart-item-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.cart-item-specs {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+.cart-item-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 4px;
+}
+
+.cart-item-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+/* 歷史訂單抽屜 (Order History) */
+.order-history-batch {
+  background: #fdfbf8;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.batch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 8px;
+}
+
+.batch-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+.status-badge.cooking {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-badge.received {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.batch-time {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.batch-item-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.batch-item-subspecs {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  padding-left: 8px;
+  margin-bottom: 4px;
+}
+
+.batch-total-row {
+  text-align: right;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-light);
+}
+
+.history-summary-box {
+  background: var(--primary-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* 拋物線飛入動畫小圓點 (Flyer Element) */
+.flyer-dot {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  background: var(--primary);
+  color: #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(194, 94, 46, 0.45);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.25, 1), opacity 0.45s ease;
+}
+
+/* 果凍彈跳動態效果 */
+@keyframes jellyBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.4, 0.8); }
+  45% { transform: scale(0.85, 1.25); }
+  60% { transform: scale(1.15, 0.95); }
+  75% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1); }
+}
+
+/* 成功送單慶祝 Toast 提示 */
+.toast-msg {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: #1e293b;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  opacity: 0;
+  transition: transform 0.35s var(--ease-spring), opacity 0.25s ease;
+  pointer-events: none;
+}
+.toast-msg.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* 桌號切換小彈窗 */
+.table-picker-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.table-choice-btn {
+  background: #f4efe8;
+  border: 1.5px solid transparent;
+  padding: 10px 0;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.table-choice-btn.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}

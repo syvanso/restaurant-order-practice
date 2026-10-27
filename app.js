@@ -237,6 +237,23 @@
 
   // 事件過濾分發器 (Event Filter Dispatcher)
   function handleAppClick(event) {
+    // 1. 優先攔截分類標籤點擊 (.cat-chip)
+    const catChip = event.target.closest('.cat-chip');
+    if (catChip) {
+      const catId = catChip.dataset.catId;
+      selectCategory(catId);
+      return;
+    }
+
+    // 2. 優先攔截桌號切換按鈕點擊 (.table-choice-btn)
+    const tableBtn = event.target.closest('.table-choice-btn');
+    if (tableBtn) {
+      const newTable = tableBtn.dataset.table;
+      switchTable(newTable);
+      return;
+    }
+
+    // 3. 攔截具有 data-action 的動作按鈕
     const actionEl = event.target.closest('[data-action]');
     if (!actionEl) return; // 點擊其他非動作區域，直接過濾拋棄
 
@@ -293,20 +310,6 @@
       default:
         break;
     }
-
-    // 分類導航 Chip 點擊
-    const catChip = event.target.closest('.cat-chip');
-    if (catChip) {
-      const catId = catChip.dataset.catId;
-      selectCategory(catId);
-    }
-
-    // 桌號選擇按鈕點擊
-    const tableBtn = event.target.closest('.table-choice-btn');
-    if (tableBtn) {
-      const newTable = tableBtn.dataset.table;
-      switchTable(newTable);
-    }
   }
 
   // ==========================================
@@ -319,8 +322,15 @@
     });
 
     const targetSection = document.getElementById(`cat-section-${catId}`);
-    if (targetSection) {
-      targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (targetSection && DOM.menuScrollContainer) {
+      const containerRect = DOM.menuScrollContainer.getBoundingClientRect();
+      const sectionRect = targetSection.getBoundingClientRect();
+      const scrollOffset = sectionRect.top - containerRect.top + DOM.menuScrollContainer.scrollTop - 8;
+
+      DOM.menuScrollContainer.scrollTo({
+        top: Math.max(0, scrollOffset),
+        behavior: 'smooth'
+      });
     }
   }
 
@@ -501,42 +511,70 @@
     appState.cart.push(cartItem);
     saveToSession(STORAGE_KEYS.CART, appState.cart);
 
-    // 啟動拋物線飛入動畫
-    const startRect = DOM.btnConfirmAddToCart.getBoundingClientRect();
-    const targetRect = DOM.floatingCartBar.getBoundingClientRect();
+    // 先更新購物車狀態，讓底部購物車長條浮現以迎接小球
+    updateCartUI();
 
+    // 取得起始點（加入按鈕）位置
+    const startRect = DOM.btnConfirmAddToCart.getBoundingClientRect();
     closeModal(DOM.specModal);
-    playFlyToCartAnimation(startRect, targetRect, () => {
-      updateCartUI();
+
+    // 啟動流暢拋物線飛入動畫
+    playFlyToCartAnimation(startRect, () => {
       triggerCartBounce();
       showToast(`已加入「${dish.name}」x${cartItem.quantity}`);
       appState.isAnimating = false;
     });
   }
 
-  function playFlyToCartAnimation(startRect, targetRect, onComplete) {
+  function playFlyToCartAnimation(startRect, onComplete) {
     const flyer = document.createElement('div');
     flyer.className = 'flyer-dot';
-    flyer.innerHTML = '<i class="bi bi-bag"></i>';
+    flyer.innerHTML = '<i class="bi bi-cart-fill"></i>';
     document.body.appendChild(flyer);
 
-    const startX = startRect.left + startRect.width / 2 - 11;
-    const startY = startRect.top + startRect.height / 2 - 11;
-    const endX = targetRect.left + 35;
-    const endY = targetRect.top + 20;
+    const startX = startRect.left + (startRect.width / 2) - 17;
+    const startY = startRect.top + (startRect.height / 2) - 17;
 
-    flyer.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
+    // 取得目標位置（底部購物車紅色徽章或長條中心）
+    const targetEl = DOM.cartItemCount || DOM.floatingCartBar;
+    const targetRect = targetEl.getBoundingClientRect();
+    let endX = targetRect.left + (targetRect.width / 2) - 17;
+    let endY = targetRect.top + (targetRect.height / 2) - 17;
 
-    // 下一偵觸發飛行動畫
-    requestAnimationFrame(() => {
-      flyer.style.transform = `translate3d(${endX}px, ${endY}px, 0) scale(0.6)`;
-      flyer.style.opacity = '0.5';
-    });
+    // 防呆坐標校正
+    if (endY <= 0 || endY > window.innerHeight) {
+      endX = window.innerWidth / 2 - 17;
+      endY = window.innerHeight - 55;
+    }
 
-    flyer.addEventListener('transitionend', () => {
-      flyer.remove();
-      if (onComplete) onComplete();
-    }, { once: true });
+    const duration = 520; // 飛行時間 520ms
+    const startTime = performance.now();
+
+    function animateFrame(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // X 軸向目標平滑逼近
+      const currentX = startX + (endX - startX) * progress;
+
+      // Y 軸拋物線：Math.sin(0~π) 產生向天空拱起高飛的拋物曲線 (-120px)
+      const arcHeight = Math.sin(progress * Math.PI) * -120;
+      const currentY = startY + (endY - startY) * (progress * progress) + arcHeight;
+
+      // 逐漸縮小至購物車比例
+      const currentScale = 1.3 - (0.55 * progress);
+
+      flyer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(${currentScale})`;
+
+      if (progress < 1) {
+        requestAnimationFrame(animateFrame);
+      } else {
+        flyer.remove();
+        if (onComplete) onComplete();
+      }
+    }
+
+    requestAnimationFrame(animateFrame);
   }
 
   function triggerCartBounce() {

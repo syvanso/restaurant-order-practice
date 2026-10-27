@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Breeze &amp; Bite 晨光輕食咖啡所 - 手機掃碼點餐</title>
+  <!-- 載入 Bootstrap Icons 圖示庫 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 手機模擬外框（在桌機置中模擬手機，在手機上自動 100% 全螢幕） -->
+  <main class="phone-viewport" id="app">
+    
+    <!-- 頂部店鋪資訊與桌號狀態欄 -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="table-badge" id="tableBtn" title="點擊切換桌號" data-action="open-table-picker">
+          <i class="bi bi-geo-alt-fill"></i>
+          <span id="currentTableDisplay">內用 A-05</span>
+          <i class="bi bi-chevron-down" style="font-size: 11px;"></i>
+        </div>
+
+        <div class="header-actions">
+          <!-- 歷史點餐紀錄按鈕 -->
+          <button class="icon-btn" id="historyBtn" title="查看點餐紀錄" data-action="open-history">
+            <i class="bi bi-receipt"></i>
+            <span class="icon-badge" id="orderBatchBadge" style="display: none;">0</span>
+          </button>
+          <!-- 清空/重置按鈕 -->
+          <button class="icon-btn" id="resetSessionBtn" title="清空紀錄 (開新桌)" data-action="reset-session">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+
+      <h1 class="restaurant-title">
+        <i class="bi bi-cup-hot" style="color: var(--primary);"></i>
+        <span id="restaurantTitleDisplay">(練習用)Breeze &amp; Bite 晨光咖啡</span>
+      </h1>
+
+      <div class="announcement-bar">
+        <i class="bi bi-megaphone-fill"></i>
+        <span id="announcementDisplay">今日低消每人一杯飲品或餐點・用餐限時 90 分鐘</span>
+      </div>
+
+      <!-- 快速搜尋框 -->
+      <div class="search-wrapper">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" class="search-input" id="menuSearchInput" placeholder="搜尋想吃的早午餐、漢堡、咖啡..." />
+      </div>
+    </header>
+
+    <!-- 置頂橫向分類導覽列 (Sticky ScrollSpy) -->
+    <nav class="category-nav-wrapper">
+      <div class="category-nav" id="categoryNav">
+        <!-- 由 JavaScript 動態生成分類標籤 -->
+      </div>
+    </nav>
+
+    <!-- 菜單餐點列表（可垂直捲動） -->
+    <section class="menu-scroll-container" id="menuScrollContainer">
+      <!-- 由 JavaScript 動態依分類生成餐點清單 -->
+    </section>
+
+    <!-- 底部懸浮購物車長條 (Floating Cart Bar) -->
+    <div class="floating-cart-bar" id="floatingCartBar">
+      <div class="cart-summary" id="cartSummaryBtn" data-action="open-cart">
+        <div class="cart-icon-wrapper">
+          <i class="bi bi-bag-check-fill"></i>
+          <span class="cart-bubble" id="cartItemCount">0</span>
+        </div>
+        <div class="cart-total-info">
+          <span class="cart-total-price" id="cartTotalPrice">NT$ 0</span>
+          <span class="cart-count-desc" id="cartCountDesc">點擊查看購物車明細</span>
+        </div>
+      </div>
+      <button class="btn-view-cart" data-action="open-cart">
+        <span>去結帳</span>
+        <i class="bi bi-arrow-right-short" style="font-size: 18px;"></i>
+      </button>
+    </div>
+
+    <!-- 彈窗 1：餐點規格選擇抽屜 (Item Customization Bottom Sheet) -->
+    <div class="modal-overlay" id="specModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-header-title" id="specDishName">餐點名稱</div>
+            <div class="sheet-header-subtitle" id="specDishEnName">English Name</div>
+          </div>
+          <button class="sheet-close-btn" data-action="close-spec-modal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="sheet-content" id="specOptionsContainer">
+          <!-- 動態載入單選/複選規格群組 -->
+        </div>
+
+        <div class="sheet-footer">
+          <!-- 數量調整 -->
+          <div class="qty-control">
+            <button class="qty-btn" id="specQtyMinus"><i class="bi bi-dash"></i></button>
+            <span class="qty-num" id="specQtyDisplay">1</span>
+            <button class="qty-btn" id="specQtyPlus"><i class="bi bi-plus"></i></button>
+          </div>
+          <!-- 確認加入購物車按鈕 -->
+          <button class="btn-confirm-add" id="btnConfirmAddToCart">
+            <i class="bi bi-cart-plus"></i>
+            <span id="specAddBtnText">加入購物車 NT$ 360</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 彈窗 2：購物車明細抽屜 (Cart Review Drawer) -->
+    <div class="modal-overlay" id="cartModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-header-title">購物車明細</div>
+            <div class="sheet-header-subtitle" id="cartTableHint">目前桌號：內用 A-05</div>
+          </div>
+          <button class="sheet-close-btn" data-action="close-cart-modal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="sheet-content">
+          <div id="cartItemsList">
+            <!-- 購物車品項列表 -->
+          </div>
+
+          <!-- 整單備註欄位 -->
+          <div style="margin-top: 16px;">
+            <div class="group-title" style="margin-bottom: 6px;">整單特別需求備註</div>
+            <textarea class="note-textarea" id="orderGeneralNote" placeholder="例如：兒童餐具 1 份、水杯放桌邊、調味醬料分開放..."></textarea>
+          </div>
+        </div>
+
+        <div class="sheet-footer">
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 11px; color: var(--text-muted);">合計總金額</span>
+            <span style="font-size: 18px; font-weight: 800; color: var(--primary);" id="cartModalTotalPrice">NT$ 0</span>
+          </div>
+          <button class="btn-confirm-add" id="btnSubmitOrder" data-action="submit-order" style="background: var(--secondary);">
+            <i class="bi bi-check2-circle"></i>
+            <span>確認送出點單</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 彈窗 3：歷史點餐紀錄抽屜 (Order History Drawer) -->
+    <div class="modal-overlay" id="historyModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-header-title">本次用餐點單紀錄</div>
+            <div class="sheet-header-subtitle">離開網頁後紀錄即會自動清空</div>
+          </div>
+          <button class="sheet-close-btn" data-action="close-history-modal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="sheet-content" id="historyOrdersContent">
+          <!-- 動態分批列出第 1 次點單、第 2 次加點 -->
+        </div>
+
+        <div class="sheet-footer" style="flex-direction: column; gap: 8px;">
+          <button class="btn-confirm-add" style="width: 100%;" data-action="close-history-modal">
+            <i class="bi bi-plus-circle"></i>
+            <span>返回菜單繼續加點</span>
+          </button>
+          <button style="background: none; border: none; font-size: 12px; color: var(--text-light); text-decoration: underline; cursor: pointer; padding: 4px;" data-action="reset-session">
+            模擬顧客離席（清空整桌紀錄）
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 彈窗 4：桌號切換小彈窗 -->
+    <div class="modal-overlay" id="tableModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <div class="sheet-header-title">請選擇或切換桌號</div>
+          <button class="sheet-close-btn" data-action="close-table-modal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <div class="sheet-content table-picker-modal">
+          <p style="font-size: 13px; color: var(--text-muted);">模擬現場不同 QR Code 掃描進來的桌位：</p>
+          <div class="table-grid" id="tableGrid">
+            <button class="table-choice-btn active" data-table="內用 A-05">內用 A-05</button>
+            <button class="table-choice-btn" data-table="內用 A-01">內用 A-01</button>
+            <button class="table-choice-btn" data-table="內用 A-02">內用 A-02</button>
+            <button class="table-choice-btn" data-table="內用 B-01">內用 B-01</button>
+            <button class="table-choice-btn" data-table="內用 B-02">內用 B-02</button>
+            <button class="table-choice-btn" data-table="戶外露台 C-1">戶外 C-1</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 提示訊息 Toast -->
+    <div class="toast-msg" id="toastMsg">
+      <i class="bi bi-check-circle-fill" style="color: #4ade80;"></i>
+      <span id="toastText">提示內容</span>
+    </div>
+
+  </main>
+
+  <!-- 載入腳本 -->
+  <script src="menuData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

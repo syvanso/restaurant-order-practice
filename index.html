@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Breeze &amp; Bite 晨光輕食咖啡所 - 手機掃碼點餐</title>
   <!-- 載入 Bootstrap Icons 圖示庫 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <!-- 手機模擬外框（在桌機置中模擬手機，在手機上自動 100% 全螢幕） -->
   <main class="phone-viewport" id="app">
-    
+
     <!-- 頂部店鋪資訊與桌號狀態欄 -->
     <header class="app-header">
       <div class="header-top">
@@ -23,6 +26,16 @@
         </div>
 
         <div class="header-actions">
+          <!-- 字體大小一鍵切換按鈕 (標準真實大小 <-> 放大字體) -->
+          <button class="font-toggle-btn" id="fontToggleBtn" title="切換「標準字體」與「放大字體」" data-action="toggle-font-size">
+            <i class="bi bi-zoom-in" id="fontToggleIcon"></i>
+            <span id="fontToggleText">大字版</span>
+          </button>
+          <!-- 練習指南與常見陷阱按鈕 -->
+          <button class="guide-pill-btn" id="guideBtn" title="查看點餐練習任務與常見陷阱解析" data-action="open-guide">
+            <i class="bi bi-lightbulb-fill"></i>
+            <span>練習指南</span>
+          </button>
           <!-- 歷史點餐紀錄按鈕 -->
           <button class="icon-btn" id="historyBtn" title="查看點餐紀錄" data-action="open-history">
             <i class="bi bi-receipt"></i>
@@ -40,7 +53,7 @@
         <span id="restaurantTitleDisplay">(練習用)Breeze &amp; Bite 晨光咖啡</span>
       </h1>
 
-      <div class="announcement-bar">
+      <div class="announcement-bar" data-action="open-guide" style="cursor: pointer;" title="點擊打開練習指南">
         <i class="bi bi-megaphone-fill"></i>
         <span id="announcementDisplay">今日低消每人一杯飲品或餐點・用餐限時 90 分鐘</span>
       </div>
@@ -48,7 +61,7 @@
       <!-- 快速搜尋框 -->
       <div class="search-wrapper">
         <i class="bi bi-search search-icon"></i>
-        <input type="text" class="search-input" id="menuSearchInput" placeholder="搜尋想吃的早午餐、漢堡、咖啡..." />
+        <input type="text" class="search-input" id="menuSearchInput" placeholder="搜尋雙人套餐、超值套餐、早午餐、漢堡..." />
       </div>
     </header>
 
@@ -66,6 +79,12 @@
 
     <!-- 底部懸浮購物車長條 (Floating Cart Bar) -->
     <div class="floating-cart-bar" id="floatingCartBar">
+      <!-- 忘記按送出訂單的溫馨氣泡提醒 -->
+      <div class="unsubmitted-reminder-bubble" id="unsubmittedReminderBubble">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>餐點還在購物車內！記得點「去結帳」並送出訂單，廚房才會開始製作喔！</span>
+      </div>
+
       <div class="cart-summary" id="cartSummaryBtn" data-action="open-cart">
         <div class="cart-icon-wrapper">
           <i class="bi bi-bag-check-fill"></i>
@@ -109,7 +128,7 @@
           </div>
           <!-- 確認加入購物車按鈕 -->
           <button class="btn-confirm-add" id="btnConfirmAddToCart">
-            <i class="bi bi-cart-plus"></i>
+            <i class="bi bi-cart-plus" id="specAddBtnIcon"></i>
             <span id="specAddBtnText">加入購物車 NT$ 360</span>
           </button>
         </div>
@@ -122,7 +141,7 @@
         <div class="sheet-handle-bar"></div>
         <div class="sheet-header">
           <div>
-            <div class="sheet-header-title">購物車明細</div>
+            <div class="sheet-header-title">購物車明細 (尚未送出)</div>
             <div class="sheet-header-subtitle" id="cartTableHint">目前桌號：內用 A-05</div>
           </div>
           <button class="sheet-close-btn" data-action="close-cart-modal">
@@ -131,6 +150,10 @@
         </div>
 
         <div class="sheet-content">
+          <div class="cart-notice-banner">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>點錯飲料或熟度嗎？可點品項旁的「<strong>修改規格</strong>」重新調整，確認無誤後請按底部「<strong>確認送出點單</strong>」。</span>
+          </div>
           <div id="cartItemsList">
             <!-- 購物車品項列表 -->
           </div>
@@ -145,9 +168,11 @@
         <div class="sheet-footer">
           <div style="display: flex; flex-direction: column;">
             <span style="font-size: 11px; color: var(--text-muted);">合計總金額</span>
-            <span style="font-size: 18px; font-weight: 800; color: var(--primary);" id="cartModalTotalPrice">NT$ 0</span>
+            <span style="font-size: 18px; font-weight: 800; color: var(--primary);" id="cartModalTotalPrice">NT$
+              0</span>
           </div>
-          <button class="btn-confirm-add" id="btnSubmitOrder" data-action="submit-order" style="background: var(--secondary);">
+          <button class="btn-confirm-add" id="btnSubmitOrder" data-action="submit-order"
+            style="background: var(--secondary);">
             <i class="bi bi-check2-circle"></i>
             <span>確認送出點單</span>
           </button>
@@ -178,7 +203,9 @@
             <i class="bi bi-plus-circle"></i>
             <span>返回菜單繼續加點</span>
           </button>
-          <button style="background: none; border: none; font-size: 12px; color: var(--text-light); text-decoration: underline; cursor: pointer; padding: 4px;" data-action="reset-session">
+          <button
+            style="background: none; border: none; font-size: 12px; color: var(--text-light); text-decoration: underline; cursor: pointer; padding: 4px;"
+            data-action="reset-session">
             模擬顧客離席（清空整桌紀錄）
           </button>
         </div>
@@ -209,9 +236,110 @@
       </div>
     </div>
 
+    <!-- 彈窗 5：手機點餐練習任務 & 常見混淆指南抽屜 (Practice Guide Modal) -->
+    <div class="modal-overlay" id="guideModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle-bar"></div>
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-header-title">💡 手機點餐練習任務 &amp; 常見陷阱指南</div>
+            <div class="sheet-header-subtitle">點擊下方「立即練習」按鈕可直接開啟對應餐點！</div>
+          </div>
+          <button class="sheet-close-btn" data-action="close-guide-modal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="sheet-content">
+          <div class="guide-section-title">🎯 推薦實作練習任務（4 大核心練習）</div>
+
+          <div class="guide-card">
+            <div class="guide-card-header">
+              <span class="guide-tag">任務 1・複選上限與更換</span>
+              <button class="guide-try-btn" data-action="quick-practice" data-dish-id="cb1">立即練習 →</button>
+            </div>
+            <div class="guide-card-title">點一份「🥂 經典雙人分享套餐」</div>
+            <div class="guide-card-desc">
+              練習在「6 選 2」的複選框中挑選 2 份主餐、2 份甜點與 2 杯飲料。試著在勾滿 2 項後<strong>再點第 3 項</strong>（觀察反灰鎖定提示），並練習<strong>先取消勾選其中 1
+                項、再改勾其他餐點</strong>。
+            </div>
+          </div>
+
+          <div class="guide-card">
+            <div class="guide-card-header">
+              <span class="guide-tag">任務 2・點兩份同款餐點</span>
+              <button class="guide-try-btn" data-action="quick-practice" data-dish-id="cb2">立即練習 →</button>
+            </div>
+            <div class="guide-card-title">點一份「💑 豪華雙人饗宴套餐」</div>
+            <div class="guide-card-desc">
+              如果兩個人想吃一模一樣的主餐怎麼辦？此套餐採用「第一份主餐（單選）＋第二份主餐（單選）」拆分設計，練習在長選單中逐一完成兩份相同或不同的主餐與飲品。
+            </div>
+          </div>
+
+          <div class="guide-card">
+            <div class="guide-card-header">
+              <span class="guide-tag">任務 3・漏選紅框提醒練習</span>
+              <button class="guide-try-btn" data-action="quick-practice" data-dish-id="cb3">立即練習 →</button>
+            </div>
+            <div class="guide-card-title">點一份「✨ 個人獨享超值套餐」</div>
+            <div class="guide-card-desc">
+              本套餐包含 1 主餐 + 1 甜點 + 1
+              飲料，且<strong>故意不預設勾選任何項目</strong>。試著故意漏掉「飲品冰塊甜度」不選，直接按底部的「加入購物車」，體驗系統自動捲動並以紅框標示未完成題目的提示！
+            </div>
+          </div>
+
+          <div class="guide-card">
+            <div class="guide-card-header">
+              <span class="guide-tag">任務 4・單點內動態升級套餐</span>
+              <button class="guide-try-btn" data-action="quick-practice" data-dish-id="b1">立即練習 →</button>
+            </div>
+            <div class="guide-card-title">在「煙燻鮭魚班尼迪克蛋」單點中升級套餐</div>
+            <div class="guide-card-desc">
+              許多餐廳不設獨立套餐區，而是藏在單點裡面！點開後找到「套餐升級選擇」，從「僅單點」改點「<strong>升級 B 套餐 (+NT$149)</strong>」，觀察下方動態展開的甜點與飲料必選欄位。
+            </div>
+          </div>
+
+          <div class="guide-section-title" style="margin-top: 22px;">❓ 一般大眾最常搞混的 6 大點餐狀況</div>
+          <ul class="pitfall-list">
+            <li>
+              <strong>1. 為什麼按「加入購物車」沒反應？</strong><br>
+              因為有「必選（未選擇）」的單選題（例如牛排熟度、冰塊甜度）沒有預設勾選，或是「必選 2 項」只勾了 1 項。請看標題右側是否顯示紅色的「未完成 / 還差 X 項」。
+            </li>
+            <li>
+              <strong>2. 複選題想換別的餐點，為什麼點不下去？</strong><br>
+              當「6 選 2」已經打勾滿 2 個時，系統會把剩下 4 個鎖定反灰。必須<strong>先點一下原本打勾的項目把勾勾取消（變成已選 1/2）</strong>，才能勾選新的項目。
+            </li>
+            <li>
+              <strong>3. 套餐寫 899 元，為什麼結帳金額變高了？</strong><br>
+              套餐內含基本款為 <code>$0</code>，若選擇標有 <code>+NT$30 升級</code> 的高單價主餐、舒芙蕾鬆餅或特調飲品，系統會自動加上「升級補差價」。
+            </li>
+            <li>
+              <strong>4. 免費忌口調整 vs 加價配料怎麼分？</strong><br>
+              「不要洋蔥、醬料分開」右側不會有 <code>+NT$</code> 金額，屬於免費客製化；若不需要調整可完全不勾選直接跳過。
+            </li>
+            <li>
+              <strong>5. 放進購物車後選錯飲料，一定要刪掉重選嗎？</strong><br>
+              不用！打開購物車明細，點擊品項右下角的「<strong>✏️ 修改規格</strong>」，就能直接跳回選單把飲料或熟度改好。
+            </li>
+            <li>
+              <strong>6. 以為按了「加入購物車」廚房就會開始做？</strong><br>
+              這是最常見的誤會！「加入購物車」只是放進籃子，一定要點畫面下方黑條的「<strong>去結帳</strong>」再按「<strong>確認送出點單</strong>」，看到「廚房製作中」才算點餐成功！
+            </li>
+          </ul>
+        </div>
+
+        <div class="sheet-footer">
+          <button class="btn-confirm-add" style="width: 100%;" data-action="close-guide-modal">
+            <i class="bi bi-check2-circle"></i>
+            <span>我知道了，開始點餐練習！</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 提示訊息 Toast -->
     <div class="toast-msg" id="toastMsg">
-      <i class="bi bi-check-circle-fill" style="color: #4ade80;"></i>
+      <i class="bi bi-check-circle-fill" id="toastIcon" style="color: #4ade80;"></i>
       <span id="toastText">提示內容</span>
     </div>
 
@@ -221,4 +349,5 @@
   <script src="menuData.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>

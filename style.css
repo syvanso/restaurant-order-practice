@@ -99,6 +99,7 @@ body {
   border: 1px solid rgba(194, 94, 46, 0.2);
   transition: var(--transition);
 }
+
 .table-badge:active {
   transform: scale(0.96);
 }
@@ -123,6 +124,7 @@ body {
   position: relative;
   transition: var(--transition);
 }
+
 .icon-btn:active {
   transform: scale(0.92);
 }
@@ -144,7 +146,7 @@ body {
 }
 
 .restaurant-title {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text-main);
   display: flex;
@@ -156,8 +158,8 @@ body {
 .announcement-bar {
   background: #faf6ee;
   color: #855728;
-  font-size: 11.5px;
-  padding: 5px 10px;
+  font-size: 13px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   margin-top: 6px;
   display: flex;
@@ -173,27 +175,29 @@ body {
 
 .search-input {
   width: 100%;
-  height: 34px;
+  height: 36px;
   background: #f2eee8;
   border: 1px solid transparent;
   border-radius: var(--radius-full);
-  padding: 0 14px 0 34px;
-  font-size: 13px;
+  padding: 0 14px 0 36px;
+  font-size: 14px;
   color: var(--text-main);
   outline: none;
   transition: var(--transition);
 }
+
 .search-input:focus {
   background: #fff;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(194, 94, 46, 0.12);
 }
+
 .search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-light);
   pointer-events: none;
 }
@@ -210,6 +214,7 @@ body {
   z-index: 15;
   scrollbar-width: none;
 }
+
 .category-nav-wrapper::-webkit-scrollbar {
   display: none;
 }
@@ -223,9 +228,9 @@ body {
 .cat-chip {
   background: #f3efe9;
   border: none;
-  padding: 6px 14px;
+  padding: 7px 15px;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
@@ -234,6 +239,7 @@ body {
   align-items: center;
   gap: 5px;
 }
+
 .cat-chip.active {
   background: var(--primary);
   color: #ffffff;
@@ -254,7 +260,7 @@ body {
 }
 
 .category-header {
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 800;
   color: var(--text-main);
   margin-bottom: 12px;
@@ -283,14 +289,15 @@ body {
   transition: var(--transition);
   cursor: pointer;
 }
+
 .dish-card:active {
   transform: scale(0.985);
   background: #fdfcfb;
 }
 
 .dish-img-box {
-  width: 95px;
-  height: 95px;
+  width: 98px;
+  height: 98px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
@@ -304,6 +311,7 @@ body {
   object-fit: cover;
   transition: transform 0.4s ease;
 }
+
 .dish-card:hover .dish-img {
   transform: scale(1.06);
 }
@@ -317,17 +325,17 @@ body {
 }
 
 .dish-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-main);
-  line-height: 1.3;
-  margin-bottom: 3px;
+  line-height: 1.35;
+  margin-bottom: 4px;
 }
 
 .dish-desc {
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--text-muted);
-  line-height: 1.4;
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -343,11 +351,11 @@ body {
 }
 
 .tag-pill {
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 600;
   background: var(--tag-bg);
   color: #7c6853;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
 }
 
@@ -359,12 +367,13 @@ body {
 }
 
 .dish-price {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--primary);
 }
+
 .dish-price small {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   margin-right: 1px;
 }
@@ -373,9 +382,9 @@ body {
   background: var(--primary);
   color: #fff;
   border: none;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 6px 12px;
+  padding: 7px 13px;
   border-radius: var(--radius-full);
   display: inline-flex;
   align-items: center;
@@ -384,6 +393,7 @@ body {
   box-shadow: 0 2px 8px rgba(194, 94, 46, 0.25);
   transition: var(--transition);
 }
+
 .btn-add-spec:active {
   transform: scale(0.94);
 }
@@ -479,6 +489,7 @@ body {
   gap: 4px;
   transition: var(--transition);
 }
+
 .btn-view-cart:active {
   transform: scale(0.95);
 }
@@ -540,12 +551,13 @@ body {
 }
 
 .sheet-header-title {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text-main);
 }
+
 .sheet-header-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -553,8 +565,8 @@ body {
 .sheet-close-btn {
   background: #f1ece4;
   border: none;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   font-size: 15px;
   color: var(--text-muted);
@@ -580,47 +592,51 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  gap: 8px;
 }
 
 .group-title {
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 700;
   color: var(--text-main);
 }
 
 .group-badge {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 700;
   color: var(--primary);
   background: var(--primary-light);
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
+  white-space: nowrap;
 }
 
 .option-pill-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 9px;
 }
 
 .option-label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  padding: 11px 14px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border-light);
   background: #faf8f5;
+  font-size: 15px;
   cursor: pointer;
   transition: var(--transition);
 }
 
 .option-label input[type="radio"],
 .option-label input[type="checkbox"] {
-  margin-right: 8px;
+  margin-right: 9px;
   accent-color: var(--primary);
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .option-label.checked {
@@ -631,24 +647,27 @@ body {
 }
 
 .option-price-diff {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--primary);
+  white-space: nowrap;
+  margin-left: 8px;
 }
 
 /* 單品備註輸入框 */
 .note-textarea {
   width: 100%;
-  height: 60px;
+  height: 64px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border-light);
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: 14px;
   background: #faf8f5;
   color: var(--text-main);
   resize: none;
   outline: none;
 }
+
 .note-textarea:focus {
   border-color: var(--primary);
   background: #fff;
@@ -674,11 +693,11 @@ body {
 }
 
 .qty-btn {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border: none;
   background: transparent;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text-main);
   cursor: pointer;
@@ -686,14 +705,15 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .qty-btn:active {
   transform: scale(0.85);
 }
 
 .qty-num {
-  width: 28px;
+  width: 30px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -702,9 +722,9 @@ body {
   background: var(--primary);
   color: #fff;
   border: none;
-  height: 44px;
+  height: 46px;
   border-radius: var(--radius-full);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -714,6 +734,7 @@ body {
   box-shadow: 0 4px 14px rgba(194, 94, 46, 0.3);
   transition: var(--transition);
 }
+
 .btn-confirm-add:active {
   transform: scale(0.97);
 }
@@ -732,20 +753,20 @@ body {
 }
 
 .cart-item-name {
-  font-size: 14.5px;
+  font-size: 15.5px;
   font-weight: 700;
   color: var(--text-main);
 }
 
 .cart-item-specs {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
-  margin-top: 2px;
-  line-height: 1.35;
+  margin-top: 3px;
+  line-height: 1.4;
 }
 
 .cart-item-price {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text-main);
   margin-top: 4px;
@@ -777,28 +798,30 @@ body {
 }
 
 .batch-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text-main);
 }
 
 .status-badge {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
 }
+
 .status-badge.cooking {
   background: #fef3c7;
   color: #92400e;
 }
+
 .status-badge.received {
   background: #e0f2fe;
   color: #0369a1;
 }
 
 .batch-time {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-light);
   margin-bottom: 8px;
 }
@@ -806,20 +829,21 @@ body {
 .batch-item-line {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14.5px;
+  font-weight: 600;
   margin-bottom: 6px;
 }
 
 .batch-item-subspecs {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--text-muted);
   padding-left: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .batch-total-row {
   text-align: right;
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--primary);
   margin-top: 8px;
@@ -861,12 +885,29 @@ body {
 
 /* 果凍彈跳動態效果 */
 @keyframes jellyBounce {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.4, 0.8); }
-  45% { transform: scale(0.85, 1.25); }
-  60% { transform: scale(1.15, 0.95); }
-  75% { transform: scale(0.95, 1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.4, 0.8);
+  }
+
+  45% {
+    transform: scale(0.85, 1.25);
+  }
+
+  60% {
+    transform: scale(1.15, 0.95);
+  }
+
+  75% {
+    transform: scale(0.95, 1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* 成功送單慶祝 Toast 提示 */
@@ -879,7 +920,7 @@ body {
   color: #fff;
   padding: 10px 20px;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -889,7 +930,9 @@ body {
   opacity: 0;
   transition: transform 0.35s var(--ease-spring), opacity 0.25s ease;
   pointer-events: none;
+  max-width: 92%;
 }
+
 .toast-msg.show {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
@@ -901,23 +944,599 @@ body {
   flex-direction: column;
   gap: 12px;
 }
+
 .table-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
+
 .table-choice-btn {
   background: #f4efe8;
   border: 1.5px solid transparent;
-  padding: 10px 0;
+  padding: 11px 0;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
 }
+
 .table-choice-btn.active {
   border-color: var(--primary);
   background: var(--primary-light);
   color: var(--primary);
+}
+
+/* ==========================================
+   新增：字體切換按鈕、練習指南、複選限制與動態展開
+   ========================================== */
+.font-toggle-btn {
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1.5px solid #c7d2fe;
+  height: 36px;
+  padding: 0 11px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.font-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.font-toggle-btn.active {
+  background: #3730a3;
+  color: #ffffff;
+  border-color: #3730a3;
+  box-shadow: 0 3px 10px rgba(55, 48, 163, 0.28);
+}
+
+.guide-pill-btn {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  height: 36px;
+  padding: 0 11px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.guide-pill-btn:active {
+  transform: scale(0.95);
+}
+
+/* 規格群組外框與條件展開 */
+.option-group {
+  margin-bottom: 18px;
+  padding: 13px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  border: 1.5px solid var(--border-light);
+  transition: all 0.25s ease;
+}
+
+.option-group.hidden-conditional {
+  display: none;
+}
+
+.option-group.conditional-revealed {
+  border-color: rgba(194, 94, 46, 0.35);
+  background: #fffcf9;
+  animation: slideDownReveal 0.28s ease;
+}
+
+@keyframes slideDownReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.group-hint {
+  font-size: 13px;
+  color: #9a5b25;
+  background: #fdf6ec;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  line-height: 1.45;
+}
+
+/* 狀態徽章：未完成必選 / 已完成 / 可選 */
+.group-badge.badge-required-pending {
+  color: #dc2626;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
+.group-badge.badge-completed {
+  color: #047857;
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+}
+
+.group-badge.badge-optional {
+  color: var(--text-muted);
+  background: #f3efe9;
+}
+
+/* 漏選時的紅框閃爍與晃動提醒 */
+.option-group.validation-error {
+  border-color: var(--danger);
+  background: #fff5f5;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  animation: errorShake 0.42s ease;
+}
+
+.validation-error-msg {
+  color: var(--danger);
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@keyframes errorShake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* 複選已達上限時的反灰鎖定樣式 */
+.option-label.disabled-limit {
+  opacity: 0.55;
+  background: #f1efec;
+  border-style: dashed;
+  color: var(--text-muted);
+}
+
+.limit-lock-tag {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  background: #e5e0d8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+/* 購物車內提示橫幅與修改規格按鈕 */
+.cart-notice-banner {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.45;
+}
+
+.btn-edit-spec {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(194, 94, 46, 0.25);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+}
+
+.btn-edit-spec:active {
+  transform: scale(0.94);
+}
+
+/* 忘記按送出訂單的懸浮氣泡提醒 */
+.unsubmitted-reminder-bubble {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 4px;
+  right: 4px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1.5px solid #f59e0b;
+  padding: 9px 13px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.unsubmitted-reminder-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  right: 36px;
+  width: 12px;
+  height: 12px;
+  background: #fef3c7;
+  border-right: 1.5px solid #f59e0b;
+  border-bottom: 1.5px solid #f59e0b;
+  transform: rotate(45deg);
+}
+
+.unsubmitted-reminder-bubble.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  animation: gentlePulse 2s infinite ease-in-out;
+}
+
+@keyframes gentlePulse {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* 練習指南彈窗卡片樣式 */
+.guide-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-card {
+  background: #faf8f5;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 13px 14px;
+  margin-bottom: 11px;
+}
+
+.guide-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.guide-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+}
+
+.guide-try-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.guide-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.guide-card-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pitfall-list {
+  padding-left: 18px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.pitfall-list strong {
+  color: var(--text-main);
+}
+
+/* ==========================================
+   🔍 友善「放大字體模式」(.large-font-mode)
+   ========================================== */
+@media (min-width: 500px) {
+  .phone-viewport.large-font-mode {
+    max-width: 472px;
+  }
+}
+
+.phone-viewport.large-font-mode .table-badge {
+  font-size: 15px;
+  padding: 5px 14px;
+}
+
+.phone-viewport.large-font-mode .font-toggle-btn,
+.phone-viewport.large-font-mode .guide-pill-btn {
+  font-size: 14.5px;
+  height: 38px;
+  padding: 0 13px;
+}
+
+.phone-viewport.large-font-mode .restaurant-title {
+  font-size: 20.5px;
+}
+
+.phone-viewport.large-font-mode .announcement-bar {
+  font-size: 15px;
+  padding: 8px 12px;
+}
+
+.phone-viewport.large-font-mode .search-input {
+  height: 42px;
+  font-size: 16px;
+}
+
+.phone-viewport.large-font-mode .cat-chip {
+  font-size: 16.5px;
+  padding: 9px 18px;
+}
+
+.phone-viewport.large-font-mode .category-header {
+  font-size: 19px;
+}
+
+.phone-viewport.large-font-mode .dish-card {
+  padding: 14px;
+}
+
+.phone-viewport.large-font-mode .dish-img-box {
+  width: 106px;
+  height: 106px;
+}
+
+.phone-viewport.large-font-mode .dish-name {
+  font-size: 18.5px;
+  line-height: 1.35;
+}
+
+.phone-viewport.large-font-mode .dish-desc {
+  font-size: 15.5px;
+  -webkit-line-clamp: 3;
+  line-height: 1.5;
+}
+
+.phone-viewport.large-font-mode .tag-pill {
+  font-size: 13.5px;
+  padding: 3px 8px;
+}
+
+.phone-viewport.large-font-mode .dish-price {
+  font-size: 20px;
+}
+
+.phone-viewport.large-font-mode .dish-price small {
+  font-size: 14.5px;
+}
+
+.phone-viewport.large-font-mode .btn-add-spec {
+  font-size: 15.5px;
+  padding: 8px 16px;
+}
+
+/* 放大模式：規格選擇抽屜 */
+.phone-viewport.large-font-mode .sheet-header-title {
+  font-size: 21px;
+}
+
+.phone-viewport.large-font-mode .sheet-header-subtitle {
+  font-size: 15px;
+}
+
+.phone-viewport.large-font-mode .sheet-close-btn {
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+}
+
+.phone-viewport.large-font-mode .group-title {
+  font-size: 18px;
+}
+
+.phone-viewport.large-font-mode .group-badge {
+  font-size: 14.5px;
+  padding: 4px 11px;
+}
+
+.phone-viewport.large-font-mode .group-hint {
+  font-size: 15px;
+  padding: 8px 12px;
+}
+
+.phone-viewport.large-font-mode .option-label {
+  font-size: 17.5px;
+  padding: 14px 16px;
+}
+
+.phone-viewport.large-font-mode .option-label input[type="radio"],
+.phone-viewport.large-font-mode .option-label input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  margin-right: 11px;
+}
+
+.phone-viewport.large-font-mode .option-price-diff {
+  font-size: 16.5px;
+}
+
+.phone-viewport.large-font-mode .limit-lock-tag {
+  font-size: 13.5px;
+}
+
+.phone-viewport.large-font-mode .validation-error-msg {
+  font-size: 15.5px;
+}
+
+.phone-viewport.large-font-mode .note-textarea {
+  font-size: 16px;
+  height: 76px;
+}
+
+.phone-viewport.large-font-mode .qty-btn {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+}
+
+.phone-viewport.large-font-mode .qty-num {
+  font-size: 18px;
+  width: 34px;
+}
+
+.phone-viewport.large-font-mode .btn-confirm-add {
+  height: 52px;
+  font-size: 18px;
+}
+
+/* 放大模式：底部購物車與明細、歷史紀錄、練習指南 */
+.phone-viewport.large-font-mode .cart-total-price {
+  font-size: 18.5px;
+}
+
+.phone-viewport.large-font-mode .cart-count-desc {
+  font-size: 13.5px;
+}
+
+.phone-viewport.large-font-mode .btn-view-cart {
+  font-size: 16px;
+  padding: 10px 18px;
+}
+
+.phone-viewport.large-font-mode .unsubmitted-reminder-bubble {
+  font-size: 15px;
+  padding: 11px 14px;
+}
+
+.phone-viewport.large-font-mode .cart-notice-banner {
+  font-size: 15px;
+}
+
+.phone-viewport.large-font-mode .cart-item-name {
+  font-size: 18px;
+}
+
+.phone-viewport.large-font-mode .cart-item-specs {
+  font-size: 15px;
+}
+
+.phone-viewport.large-font-mode .cart-item-price {
+  font-size: 17.5px;
+}
+
+.phone-viewport.large-font-mode .btn-edit-spec {
+  font-size: 14.5px;
+  padding: 5px 12px;
+}
+
+.phone-viewport.large-font-mode .batch-title {
+  font-size: 17.5px;
+}
+
+.phone-viewport.large-font-mode .batch-item-line {
+  font-size: 16.5px;
+}
+
+.phone-viewport.large-font-mode .batch-item-subspecs {
+  font-size: 15px;
+}
+
+.phone-viewport.large-font-mode .batch-total-row {
+  font-size: 17px;
+}
+
+.phone-viewport.large-font-mode .guide-section-title {
+  font-size: 17.5px;
+}
+
+.phone-viewport.large-font-mode .guide-tag {
+  font-size: 14px;
+}
+
+.phone-viewport.large-font-mode .guide-try-btn {
+  font-size: 14.5px;
+  padding: 6px 14px;
+}
+
+.phone-viewport.large-font-mode .guide-card-title {
+  font-size: 17.5px;
+}
+
+.phone-viewport.large-font-mode .guide-card-desc,
+.phone-viewport.large-font-mode .pitfall-list {
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.phone-viewport.large-font-mode .toast-msg {
+  font-size: 16px;
+  padding: 12px 22px;
 }

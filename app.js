@@ -1,6 +1,7 @@
 // Breeze & Bite Cafe - 主應用程式邏輯
 // 包含事件過濾委派 (Event Delegation & Filtering)、sessionStorage 生命週期、
-// 規格彈窗、拋物線飛入動畫、購物車與多次加點歷史紀錄
+// 雙人/超值套餐複選上限鎖定、必選漏選紅框導引、單點動態展開升級套餐、
+// 購物車重新編輯規格、未送單溫馨提醒、拋物線飛入動畫與多次加點歷史紀錄
 
 (function () {
   'use strict';
@@ -11,7 +12,8 @@
   const STORAGE_KEYS = {
     CART: 'breeze_cart',
     ORDERS: 'breeze_orders',
-    TABLE: 'breeze_table'
+    TABLE: 'breeze_table',
+    FONT_MODE: 'breeze_font_mode'
   };
 
   // 從網址參數讀取桌號 (如 ?table=A-02)，若無則從 sessionStorage 讀取或使用預設
@@ -20,14 +22,17 @@
 
   const appState = {
     currentTable: initialTable,
+    isLargeFont: loadFromSession(STORAGE_KEYS.FONT_MODE, false), // 是否啟用放大字體模式
     cart: loadFromSession(STORAGE_KEYS.CART, []), // 購物車陣列
     orders: loadFromSession(STORAGE_KEYS.ORDERS, []), // 歷史送單批次陣列
     activeCategoryId: RESTAURANT_INFO.categories[0].id,
     currentSpecItem: null, // 當前在規格彈窗中選擇的商品
     currentSpecQuantity: 1,
-    currentSpecSelections: {}, // 當前規格彈窗已選的選項
+    currentSpecSelections: {}, // { groupId: [optIndex1, optIndex2, ...] } 儲存選中的 option index 陣列
+    editingCartIndex: null, // 若不為 null，代表正在修改購物車內第 N 個品項的規格
     searchQuery: '',
-    isAnimating: false // 防連點節流鎖定
+    isAnimating: false, // 防連點節流鎖定
+    unsubmittedTimer: null // 忘記送出訂單提醒計時器
   };
 
   function loadFromSession(key, defaultValue) {
@@ -60,6 +65,7 @@
     categoryNav: document.getElementById('categoryNav'),
     menuScrollContainer: document.getElementById('menuScrollContainer'),
     floatingCartBar: document.getElementById('floatingCartBar'),
+    unsubmittedReminderBubble: document.getElementById('unsubmittedReminderBubble'),
     cartItemCount: document.getElementById('cartItemCount'),
     cartTotalPrice: document.getElementById('cartTotalPrice'),
     cartCountDesc: document.getElementById('cartCountDesc'),
@@ -71,6 +77,7 @@
     specQtyMinus: document.getElementById('specQtyMinus'),
     specQtyPlus: document.getElementById('specQtyPlus'),
     specQtyDisplay: document.getElementById('specQtyDisplay'),
+    specAddBtnIcon: document.getElementById('specAddBtnIcon'),
     specAddBtnText: document.getElementById('specAddBtnText'),
     btnConfirmAddToCart: document.getElementById('btnConfirmAddToCart'),
     // 購物車彈窗
@@ -85,8 +92,14 @@
     // 桌號彈窗
     tableModal: document.getElementById('tableModal'),
     tableGrid: document.getElementById('tableGrid'),
+    // 練習指南彈窗與字體切換
+    guideModal: document.getElementById('guideModal'),
+    fontToggleBtn: document.getElementById('fontToggleBtn'),
+    fontToggleIcon: document.getElementById('fontToggleIcon'),
+    fontToggleText: document.getElementById('fontToggleText'),
     // Toast
     toastMsg: document.getElementById('toastMsg'),
+    toastIcon: document.getElementById('toastIcon'),
     toastText: document.getElementById('toastText')
   };
 
@@ -106,12 +119,38 @@
       announceEl.textContent = RESTAURANT_INFO.announcement;
     }
 
+    applyFontSizeMode();
     renderCategoryNav();
     renderMenuItems();
     updateCartUI();
     updateHistoryBadge();
     bindEvents();
     setupScrollSpy();
+    resetUnsubmittedReminderTimer();
+  }
+
+  function applyFontSizeMode() {
+    DOM.app.classList.toggle('large-font-mode', appState.isLargeFont);
+    if (DOM.fontToggleBtn) {
+      DOM.fontToggleBtn.classList.toggle('active', appState.isLargeFont);
+    }
+    if (DOM.fontToggleIcon) {
+      DOM.fontToggleIcon.className = appState.isLargeFont ? 'bi bi-zoom-out' : 'bi bi-zoom-in';
+    }
+    if (DOM.fontToggleText) {
+      DOM.fontToggleText.textContent = appState.isLargeFont ? '標準字' : '大字版';
+    }
+  }
+
+  function toggleFontSizeMode() {
+    appState.isLargeFont = !appState.isLargeFont;
+    saveToSession(STORAGE_KEYS.FONT_MODE, appState.isLargeFont);
+    applyFontSizeMode();
+    if (appState.isLargeFont) {
+      showToast('🔍 已切換為「清晰大字版」！再點一次可切回標準字體');
+    } else {
+      showToast('📱 已切換為「市面餐廳標準字體」！');
+    }
   }
 
   // 渲染置頂橫向分類標籤
@@ -171,8 +210,9 @@
   }
 
   function createDishCardHTML(dish) {
+    const isCombo = dish.categoryId === 'combo';
     return `
-      <div class="dish-card" data-action="open-spec-modal" data-dish-id="${dish.id}">
+      <div class="dish-card" data-action="open-spec-modal" data-dish-id="${dish.id}" ${isCombo ? 'style="border: 1.5px solid rgba(194, 94, 46, 0.25); background: #fffdf9;"' : ''}>
         <div class="dish-img-box">
           <img class="dish-img" src="${dish.image}" alt="${dish.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80'" />
         </div>
@@ -185,10 +225,10 @@
             </div>
           </div>
           <div class="dish-bottom">
-            <div class="dish-price"><small>NT$</small>${dish.price}</div>
+            <div class="dish-price"><small>NT$</small>${dish.price}<small style="font-size: 11px; color: var(--text-muted); font-weight: 500;"> 起</small></div>
             <button class="btn-add-spec" data-action="open-spec-modal" data-dish-id="${dish.id}">
               <i class="bi bi-plus-lg"></i>
-              <span>選規格</span>
+              <span>${isCombo ? '選套餐內容' : '選規格'}</span>
             </button>
           </div>
         </div>
@@ -228,10 +268,24 @@
       updateSpecPriceDisplay();
     });
 
+    // 規格彈窗內攔截「已達複選上限」的反灰選項點擊，跳出友善教學提示
+    DOM.specOptionsContainer.addEventListener('click', (e) => {
+      const lockedLabel = e.target.closest('.option-label.disabled-limit');
+      if (lockedLabel) {
+        e.preventDefault();
+        e.stopPropagation();
+        const groupEl = lockedLabel.closest('.option-group');
+        const groupId = groupEl?.dataset.groupId;
+        const group = appState.currentSpecItem?.optionGroups.find(g => g.id === groupId);
+        const max = group?.maxSelect || 2;
+        showToast(`⚠️ 此區最多只能選 ${max} 項！請先點一下「已打勾的項目」取消，才能改選其他餐點喔！`, 'warn');
+      }
+    });
+
     // 規格彈窗內選項異動（radio / checkbox change）
     DOM.specOptionsContainer.addEventListener('change', handleSpecOptionChange);
 
-    // 確認加入購物車
+    // 確認加入購物車 / 更新規格
     DOM.btnConfirmAddToCart.addEventListener('click', handleConfirmAddToCart);
   }
 
@@ -255,14 +309,14 @@
 
     // 3. 攔截具有 data-action 的動作按鈕
     const actionEl = event.target.closest('[data-action]');
-    if (!actionEl) return; // 點擊其他非動作區域，直接過濾拋棄
+    if (!actionEl) return;
 
     const action = actionEl.dataset.action;
 
     switch (action) {
       case 'open-spec-modal': {
         const dishId = actionEl.dataset.dishId;
-        openSpecModal(dishId, actionEl);
+        openSpecModal(dishId, null);
         break;
       }
       case 'close-spec-modal':
@@ -286,6 +340,23 @@
       case 'close-table-modal':
         closeModal(DOM.tableModal);
         break;
+      case 'open-guide':
+        openModal(DOM.guideModal);
+        break;
+      case 'close-guide-modal':
+        closeModal(DOM.guideModal);
+        break;
+      case 'toggle-font-size':
+        toggleFontSizeMode();
+        break;
+      case 'quick-practice': {
+        const dishId = actionEl.dataset.dishId;
+        closeModal(DOM.guideModal);
+        setTimeout(() => {
+          openSpecModal(dishId, null);
+        }, 220);
+        break;
+      }
       case 'submit-order':
         submitOrder();
         break;
@@ -305,6 +376,17 @@
       case 'cart-delete': {
         const cartIndex = parseInt(actionEl.dataset.index, 10);
         removeCartItem(cartIndex);
+        break;
+      }
+      case 'cart-edit': {
+        const cartIndex = parseInt(actionEl.dataset.index, 10);
+        closeModal(DOM.cartModal);
+        setTimeout(() => {
+          const item = appState.cart[cartIndex];
+          if (item) {
+            openSpecModal(item.dishId, cartIndex);
+          }
+        }, 200);
         break;
       }
       default:
@@ -371,64 +453,134 @@
   }
 
   // ==========================================
-  // 6. 規格客製化彈窗 (Customization Modal)
+  // 6. 規格客製化彈窗 (支援複選上限、無預設必選、動態展開與修改規格)
   // ==========================================
-  function openSpecModal(dishId, sourceEl) {
+  function isGroupVisible(group) {
+    if (!group.showIf) return true;
+    const parentGroupId = group.showIf.groupId;
+    const parentGroup = appState.currentSpecItem?.optionGroups.find(g => g.id === parentGroupId);
+    if (!parentGroup) return true;
+
+    const selectedIndices = appState.currentSpecSelections[parentGroupId] || [];
+    return selectedIndices.some(idx => {
+      const opt = parentGroup.options[idx];
+      return opt && group.showIf.optionIds.includes(opt.id);
+    });
+  }
+
+  function getGroupBadgeInfo(group, selectedIndices) {
+    const count = selectedIndices.length;
+    if (group.type === 'radio') {
+      if (group.required) {
+        if (count === 0) {
+          return { text: '必選 1 項 (未選擇)', cls: 'badge-required-pending' };
+        }
+        return { text: '✓ 已完成必選', cls: 'badge-completed' };
+      }
+      return { text: '單選', cls: 'badge-optional' };
+    } else {
+      // checkbox
+      const min = group.minSelect || 0;
+      const max = group.maxSelect || null;
+      if (group.required && min > 0) {
+        if (count < min) {
+          return { text: `必選 ${min} 項 (已選 ${count}/${min})`, cls: 'badge-required-pending' };
+        }
+        return { text: `✓ 已選滿 ${count}/${max || min} 項`, cls: 'badge-completed' };
+      }
+      if (max) {
+        return { text: `可複選 (最多 ${max} 項・已選 ${count})`, cls: 'badge-optional' };
+      }
+      return { text: count > 0 ? `可複選 (已選 ${count} 項)` : '可複選 (選填)', cls: 'badge-optional' };
+    }
+  }
+
+  function openSpecModal(dishId, editingCartIndex = null) {
     const dish = MENU_ITEMS.find(d => d.id === dishId);
     if (!dish) return;
 
     appState.currentSpecItem = dish;
-    appState.currentSpecQuantity = 1;
+    appState.editingCartIndex = editingCartIndex;
     appState.currentSpecSelections = {};
 
-    DOM.specDishName.textContent = dish.name;
-    DOM.specDishEnName.textContent = dish.enName;
-    DOM.specQtyDisplay.textContent = '1';
+    const editingItem = (editingCartIndex !== null && appState.cart[editingCartIndex]) ? appState.cart[editingCartIndex] : null;
+    appState.currentSpecQuantity = editingItem ? editingItem.quantity : 1;
 
-    // 渲染規格群組
-    DOM.specOptionsContainer.innerHTML = dish.optionGroups.map(group => {
-      // 預設選中
-      if (group.type === 'radio') {
-        const defaultOption = group.options.find(o => o.default) || group.options[0];
-        appState.currentSpecSelections[group.id] = [defaultOption];
+    DOM.specDishName.textContent = editingItem ? `✏️ 修改：${dish.name}` : dish.name;
+    DOM.specDishEnName.textContent = dish.enName;
+    DOM.specQtyDisplay.textContent = String(appState.currentSpecQuantity);
+
+    // 初始化每個規格群組的預設選項或還原購物車選項
+    dish.optionGroups.forEach(group => {
+      if (editingItem && editingItem.rawSelections && Array.isArray(editingItem.rawSelections[group.id])) {
+        appState.currentSpecSelections[group.id] = [...editingItem.rawSelections[group.id]];
+      } else if (group.type === 'radio') {
+        // 只有明確標註 default: true 的選項才會預選，模擬真實點餐「必選卻無預設值」的情境
+        const defaultIdx = group.options.findIndex(o => o.default === true);
+        appState.currentSpecSelections[group.id] = (defaultIdx !== -1) ? [defaultIdx] : [];
       } else {
-        appState.currentSpecSelections[group.id] = [];
+        const defaultIndices = [];
+        group.options.forEach((o, idx) => {
+          if (o.default === true) defaultIndices.push(idx);
+        });
+        appState.currentSpecSelections[group.id] = defaultIndices;
       }
+    });
+
+    renderSpecGroupsHTML(editingItem ? editingItem.note : '');
+    updateSpecPriceDisplay();
+    openModal(DOM.specModal);
+    DOM.specOptionsContainer.scrollTop = 0;
+  }
+
+  function renderSpecGroupsHTML(initialNote = '') {
+    const dish = appState.currentSpecItem;
+    if (!dish) return;
+
+    DOM.specOptionsContainer.innerHTML = dish.optionGroups.map(group => {
+      const visible = isGroupVisible(group);
+      const selectedIndices = appState.currentSpecSelections[group.id] || [];
+      const badge = getGroupBadgeInfo(group, selectedIndices);
+      const isMaxReached = (group.type === 'checkbox' && group.maxSelect && selectedIndices.length >= group.maxSelect);
 
       return `
-        <div class="option-group" data-group-id="${group.id}" data-group-type="${group.type}">
+        <div class="option-group ${visible ? '' : 'hidden-conditional'}" 
+             id="spec-group-box-${group.id}"
+             data-group-id="${group.id}" 
+             data-group-type="${group.type}">
           <div class="group-title-row">
             <span class="group-title">${group.name}</span>
-            <span class="group-badge">${group.type === 'radio' ? '單選' : '可複選'}</span>
+            <span class="group-badge ${badge.cls}" id="spec-badge-${group.id}">${badge.text}</span>
           </div>
+          ${group.hint ? `<div class="group-hint">${group.hint}</div>` : ''}
           <div class="option-pill-grid">
             ${group.options.map((opt, optIdx) => {
-              const isChecked = (group.type === 'radio' && opt.default);
-              return `
-                <label class="option-label ${isChecked ? 'checked' : ''}">
-                  <div style="display: flex; align-items: center;">
+        const isChecked = selectedIndices.includes(optIdx);
+        const isLocked = (!isChecked && isMaxReached);
+        return `
+                <label class="option-label ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled-limit' : ''}" data-opt-idx="${optIdx}">
+                  <div style="display: flex; align-items: center; flex-wrap: wrap;">
                     <input type="${group.type}" 
                            name="spec_grp_${group.id}" 
                            value="${optIdx}" 
                            ${isChecked ? 'checked' : ''} />
                     <span>${opt.name}</span>
+                    ${isLocked ? `<span class="limit-lock-tag">已滿上限</span>` : ''}
                   </div>
-                  ${opt.price > 0 ? `<span class="option-price-diff">+NT$ ${opt.price}</span>` : ''}
+                  ${opt.price > 0 ? `<span class="option-price-diff">+NT$ ${opt.price}</span>` : `<span style="font-size: 11.5px; color: var(--text-light);">+$0</span>`}
                 </label>
               `;
-            }).join('')}
+      }).join('')}
           </div>
+          <div class="validation-error-container" id="spec-err-${group.id}"></div>
         </div>
       `;
     }).join('') + `
       <div style="margin-top: 18px;">
-        <div class="group-title" style="margin-bottom: 8px;">單品備註（如不要蔥、醬少等）</div>
-        <textarea class="note-textarea" id="itemCustomNote" placeholder="若有特殊客製化需求，請在此填寫..."></textarea>
+        <div class="group-title" style="margin-bottom: 8px;">單品特別備註（選填）</div>
+        <textarea class="note-textarea" id="itemCustomNote" placeholder="若有其他客製化需求（如：某杯飲料去冰、漢堡對切等），請在此填寫...">${initialNote}</textarea>
       </div>
     `;
-
-    updateSpecPriceDisplay();
-    openModal(DOM.specModal);
   }
 
   function handleSpecOptionChange(e) {
@@ -439,32 +591,118 @@
     const groupId = groupEl.dataset.groupId;
     const groupType = groupEl.dataset.groupType;
     const group = appState.currentSpecItem.optionGroups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const optIdx = parseInt(e.target.value, 10);
 
     if (groupType === 'radio') {
-      // 單選：取消該組其他標籤的 checked 樣式
-      groupEl.querySelectorAll('.option-label').forEach(lbl => lbl.classList.remove('checked'));
-      label.classList.add('checked');
-      const optIdx = parseInt(e.target.value, 10);
-      appState.currentSpecSelections[groupId] = [group.options[optIdx]];
+      appState.currentSpecSelections[groupId] = [optIdx];
     } else {
-      // 複選
-      label.classList.toggle('checked', e.target.checked);
-      const checkedInputs = groupEl.querySelectorAll('input[type="checkbox"]:checked');
-      appState.currentSpecSelections[groupId] = Array.from(checkedInputs).map(inp => {
-        return group.options[parseInt(inp.value, 10)];
-      });
+      let currentList = appState.currentSpecSelections[groupId] || [];
+      if (e.target.checked) {
+        // 檢查複選上限
+        if (group.maxSelect && currentList.length >= group.maxSelect) {
+          e.target.checked = false;
+          showToast(`⚠️ 此區最多只能選 ${group.maxSelect} 項！請先取消勾選其他項目再更換`, 'warn');
+          return;
+        }
+        if (!currentList.includes(optIdx)) {
+          currentList.push(optIdx);
+        }
+      } else {
+        currentList = currentList.filter(i => i !== optIdx);
+      }
+      appState.currentSpecSelections[groupId] = currentList;
     }
 
+    // 清除該群組的錯誤紅框狀態
+    groupEl.classList.remove('validation-error');
+    const errBox = document.getElementById(`spec-err-${groupId}`);
+    if (errBox) errBox.innerHTML = '';
+
+    // 同步更新該群組與任何受條件連動 (showIf) 影響的群組 UI
+    syncSpecGroupUI(groupId);
     updateSpecPriceDisplay();
+  }
+
+  function syncSpecGroupUI(changedGroupId) {
+    const dish = appState.currentSpecItem;
+    if (!dish) return;
+
+    let newlyRevealedCount = 0;
+
+    dish.optionGroups.forEach(group => {
+      const groupEl = document.getElementById(`spec-group-box-${group.id}`);
+      if (!groupEl) return;
+
+      // 1. 檢查動態條件展開 (showIf)
+      const wasHidden = groupEl.classList.contains('hidden-conditional');
+      const nowVisible = isGroupVisible(group);
+
+      if (nowVisible && wasHidden) {
+        groupEl.classList.remove('hidden-conditional');
+        groupEl.classList.add('conditional-revealed');
+        newlyRevealedCount++;
+      } else if (!nowVisible && !wasHidden) {
+        groupEl.classList.add('hidden-conditional');
+        groupEl.classList.remove('conditional-revealed', 'validation-error');
+      }
+
+      // 2. 更新選項勾選樣式與複選上限鎖定狀態
+      const selectedIndices = appState.currentSpecSelections[group.id] || [];
+      const isMaxReached = (group.type === 'checkbox' && group.maxSelect && selectedIndices.length >= group.maxSelect);
+
+      groupEl.querySelectorAll('.option-label').forEach(lbl => {
+        const idx = parseInt(lbl.dataset.optIdx, 10);
+        const inp = lbl.querySelector('input');
+        const isChecked = selectedIndices.includes(idx);
+        const isLocked = (!isChecked && isMaxReached);
+
+        if (inp) inp.checked = isChecked;
+        lbl.classList.toggle('checked', isChecked);
+        lbl.classList.toggle('disabled-limit', isLocked);
+
+        // 動態維護「已滿上限」小標籤
+        const existingLockTag = lbl.querySelector('.limit-lock-tag');
+        if (isLocked && !existingLockTag) {
+          const wrapDiv = lbl.querySelector('div');
+          if (wrapDiv) {
+            const tag = document.createElement('span');
+            tag.className = 'limit-lock-tag';
+            tag.textContent = '已滿上限';
+            wrapDiv.appendChild(tag);
+          }
+        } else if (!isLocked && existingLockTag) {
+          existingLockTag.remove();
+        }
+      });
+
+      // 3. 更新群組右上角狀態徽章
+      const badgeEl = document.getElementById(`spec-badge-${group.id}`);
+      if (badgeEl) {
+        const badge = getGroupBadgeInfo(group, selectedIndices);
+        badgeEl.className = `group-badge ${badge.cls}`;
+        badgeEl.textContent = badge.text;
+      }
+    });
+
+    if (changedGroupId === 'combo_upgrade' && newlyRevealedCount > 0) {
+      showToast('✨ 已為您展開下方「套餐附餐與飲品」必選項目，請往下滑動挑選！');
+    }
   }
 
   function calculateCurrentSpecUnitPrice() {
     if (!appState.currentSpecItem) return 0;
     let unitPrice = appState.currentSpecItem.price;
 
-    Object.values(appState.currentSpecSelections).forEach(selectedOpts => {
-      selectedOpts.forEach(opt => {
-        if (opt.price) unitPrice += opt.price;
+    appState.currentSpecItem.optionGroups.forEach(group => {
+      if (!isGroupVisible(group)) return; // 隱藏的條件群組不計價
+      const selectedIndices = appState.currentSpecSelections[group.id] || [];
+      selectedIndices.forEach(idx => {
+        const opt = group.options[idx];
+        if (opt && opt.price) {
+          unitPrice += opt.price;
+        }
       });
     });
 
@@ -474,29 +712,127 @@
   function updateSpecPriceDisplay() {
     const unitPrice = calculateCurrentSpecUnitPrice();
     const totalPrice = unitPrice * appState.currentSpecQuantity;
-    DOM.specAddBtnText.textContent = `加入購物車 NT$ ${totalPrice}`;
+    if (appState.editingCartIndex !== null) {
+      DOM.specAddBtnIcon.className = 'bi bi-check2-circle';
+      DOM.specAddBtnText.textContent = `確認更新規格 NT$ ${totalPrice}`;
+    } else {
+      DOM.specAddBtnIcon.className = 'bi bi-cart-plus';
+      DOM.specAddBtnText.textContent = `加入購物車 NT$ ${totalPrice}`;
+    }
+  }
+
+  // 驗證所有可見的必選群組是否已完成
+  function validateSpecSelections() {
+    const dish = appState.currentSpecItem;
+    if (!dish) return false;
+
+    let firstIncompleteEl = null;
+    let firstIncompleteName = '';
+
+    dish.optionGroups.forEach(group => {
+      const groupEl = document.getElementById(`spec-group-box-${group.id}`);
+      const errBox = document.getElementById(`spec-err-${group.id}`);
+      if (!groupEl || !isGroupVisible(group)) return;
+
+      const selectedIndices = appState.currentSpecSelections[group.id] || [];
+      let isIncomplete = false;
+      let errMsg = '';
+
+      if (group.required) {
+        if (group.type === 'radio' && selectedIndices.length === 0) {
+          isIncomplete = true;
+          errMsg = '此為必選項目，請點選其中 1 項！';
+        } else if (group.type === 'checkbox') {
+          const min = group.minSelect || 1;
+          if (selectedIndices.length < min) {
+            const diff = min - selectedIndices.length;
+            isIncomplete = true;
+            errMsg = `此區需選滿 ${min} 項，您目前已選 ${selectedIndices.length} 項（還差 ${diff} 項）！`;
+          }
+        }
+      }
+
+      if (isIncomplete) {
+        groupEl.classList.remove('validation-error');
+        void groupEl.offsetWidth; // 觸發重繪以重播 shake 動畫
+        groupEl.classList.add('validation-error');
+        if (errBox) {
+          errBox.innerHTML = `<div class="validation-error-msg"><i class="bi bi-exclamation-triangle-fill"></i><span>${errMsg}</span></div>`;
+        }
+        if (!firstIncompleteEl) {
+          firstIncompleteEl = groupEl;
+          firstIncompleteName = group.name;
+        }
+      } else {
+        groupEl.classList.remove('validation-error');
+        if (errBox) errBox.innerHTML = '';
+      }
+    });
+
+    if (firstIncompleteEl) {
+      // 自動平滑捲動至第一個漏選的欄位
+      firstIncompleteEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast(`⚠️ 尚未完成必選項目：「${firstIncompleteName}」`, 'warn');
+      return false;
+    }
+
+    return true;
   }
 
   // ==========================================
-  // 7. 加入購物車與拋物線飛入動畫 (Fly-to-Cart)
+  // 7. 加入購物車 / 更新規格與拋物線飛入動畫 (Fly-to-Cart)
   // ==========================================
-  function handleConfirmAddToCart(e) {
-    if (appState.isAnimating) return; // 正在動畫中防重複觸發
-    appState.isAnimating = true;
+  function handleConfirmAddToCart() {
+    if (appState.isAnimating) return;
+
+    // 先執行必選規格驗證（若有漏選會自動捲動並紅框提示）
+    if (!validateSpecSelections()) {
+      return;
+    }
 
     const dish = appState.currentSpecItem;
     const unitPrice = calculateCurrentSpecUnitPrice();
     const customNote = document.getElementById('itemCustomNote')?.value.trim() || '';
 
-    // 彙整選擇的規格字串
+    // 彙整可見群組所選擇的規格字串與原始選項索引
     const selectedSpecs = [];
-    Object.values(appState.currentSpecSelections).forEach(opts => {
-      opts.forEach(opt => {
-        selectedSpecs.push(opt.name + (opt.price ? ` (+NT$${opt.price})` : ''));
+    const savedRawSelections = {};
+
+    dish.optionGroups.forEach(group => {
+      const selectedIndices = appState.currentSpecSelections[group.id] || [];
+      savedRawSelections[group.id] = [...selectedIndices];
+
+      if (!isGroupVisible(group)) return;
+      selectedIndices.forEach(idx => {
+        const opt = group.options[idx];
+        if (opt) {
+          selectedSpecs.push(opt.name + (opt.price ? ` (+NT$${opt.price})` : ''));
+        }
       });
     });
 
-    // 建立購物車項目物件
+    // 情境 A：正在編輯購物車內既有品項
+    if (appState.editingCartIndex !== null && appState.cart[appState.editingCartIndex]) {
+      const targetItem = appState.cart[appState.editingCartIndex];
+      targetItem.unitPrice = unitPrice;
+      targetItem.quantity = appState.currentSpecQuantity;
+      targetItem.specs = selectedSpecs;
+      targetItem.rawSelections = savedRawSelections;
+      targetItem.note = customNote;
+
+      saveToSession(STORAGE_KEYS.CART, appState.cart);
+      updateCartUI();
+      closeModal(DOM.specModal);
+      showToast(`✅ 已更新「${dish.name}」的規格設定！`);
+      setTimeout(() => {
+        openCartModal();
+      }, 220);
+      return;
+    }
+
+    // 情境 B：新增品項至購物車
+    appState.isAnimating = true;
+
     const cartItem = {
       cartId: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
       dishId: dish.id,
@@ -505,23 +841,22 @@
       unitPrice: unitPrice,
       quantity: appState.currentSpecQuantity,
       specs: selectedSpecs,
+      rawSelections: savedRawSelections,
       note: customNote
     };
 
     appState.cart.push(cartItem);
     saveToSession(STORAGE_KEYS.CART, appState.cart);
 
-    // 先更新購物車狀態，讓底部購物車長條浮現以迎接小球
     updateCartUI();
+    resetUnsubmittedReminderTimer();
 
-    // 取得起始點（加入按鈕）位置
     const startRect = DOM.btnConfirmAddToCart.getBoundingClientRect();
     closeModal(DOM.specModal);
 
-    // 啟動流暢拋物線飛入動畫
     playFlyToCartAnimation(startRect, () => {
       triggerCartBounce();
-      showToast(`已加入「${dish.name}」x${cartItem.quantity}`);
+      showToast(`已加入購物車「${dish.name}」x${cartItem.quantity}`);
       appState.isAnimating = false;
     });
   }
@@ -535,33 +870,26 @@
     const startX = startRect.left + (startRect.width / 2) - 17;
     const startY = startRect.top + (startRect.height / 2) - 17;
 
-    // 取得目標位置（底部購物車紅色徽章或長條中心）
     const targetEl = DOM.cartItemCount || DOM.floatingCartBar;
     const targetRect = targetEl.getBoundingClientRect();
     let endX = targetRect.left + (targetRect.width / 2) - 17;
     let endY = targetRect.top + (targetRect.height / 2) - 17;
 
-    // 防呆坐標校正
     if (endY <= 0 || endY > window.innerHeight) {
       endX = window.innerWidth / 2 - 17;
       endY = window.innerHeight - 55;
     }
 
-    const duration = 520; // 飛行時間 520ms
+    const duration = 520;
     const startTime = performance.now();
 
     function animateFrame(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      // X 軸向目標平滑逼近
       const currentX = startX + (endX - startX) * progress;
-
-      // Y 軸拋物線：Math.sin(0~π) 產生向天空拱起高飛的拋物曲線 (-120px)
       const arcHeight = Math.sin(progress * Math.PI) * -120;
       const currentY = startY + (endY - startY) * (progress * progress) + arcHeight;
-
-      // 逐漸縮小至購物車比例
       const currentScale = 1.3 - (0.55 * progress);
 
       flyer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(${currentScale})`;
@@ -579,13 +907,29 @@
 
   function triggerCartBounce() {
     DOM.cartItemCount.classList.remove('bounce');
-    void DOM.cartItemCount.offsetWidth; // 觸發重繪
+    void DOM.cartItemCount.offsetWidth;
     DOM.cartItemCount.classList.add('bounce');
   }
 
   // ==========================================
-  // 8. 購物車界面與操作 (Cart Drawer)
+  // 8. 購物車界面、修改規格與未送單提醒 (Cart Drawer)
   // ==========================================
+  function resetUnsubmittedReminderTimer() {
+    clearTimeout(appState.unsubmittedTimer);
+    if (DOM.unsubmittedReminderBubble) {
+      DOM.unsubmittedReminderBubble.classList.remove('show');
+    }
+
+    if (appState.cart.length > 0) {
+      // 若購物車內有商品且超過 22 秒尚未送出點單，跳出溫馨氣泡提醒
+      appState.unsubmittedTimer = setTimeout(() => {
+        if (appState.cart.length > 0 && DOM.unsubmittedReminderBubble) {
+          DOM.unsubmittedReminderBubble.classList.add('show');
+        }
+      }, 22000);
+    }
+  }
+
   function updateCartUI() {
     const totalCount = appState.cart.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
@@ -596,9 +940,12 @@
 
     if (totalCount > 0) {
       DOM.floatingCartBar.classList.add('visible');
-      DOM.cartCountDesc.textContent = `已選購 ${totalCount} 樣美味餐點`;
+      DOM.cartCountDesc.textContent = `已選 ${totalCount} 樣餐點・尚未送出訂單`;
     } else {
       DOM.floatingCartBar.classList.remove('visible');
+      if (DOM.unsubmittedReminderBubble) {
+        DOM.unsubmittedReminderBubble.classList.remove('show');
+      }
     }
   }
 
@@ -608,6 +955,9 @@
       return;
     }
 
+    if (DOM.unsubmittedReminderBubble) {
+      DOM.unsubmittedReminderBubble.classList.remove('show');
+    }
     renderCartItems();
     openModal(DOM.cartModal);
   }
@@ -630,7 +980,13 @@
           <div class="cart-item-name">${item.name}</div>
           ${item.specs.length > 0 ? `<div class="cart-item-specs">${item.specs.join(' / ')}</div>` : ''}
           ${item.note ? `<div class="cart-item-specs" style="color: var(--primary);">備註: ${item.note}</div>` : ''}
-          <div class="cart-item-price">NT$ ${item.unitPrice * item.quantity}</div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+            <span class="cart-item-price" style="margin-top: 0;">NT$ ${item.unitPrice * item.quantity}</span>
+            <button class="btn-edit-spec" data-action="cart-edit" data-index="${idx}" title="重新修改此餐點的內容與規格">
+              <i class="bi bi-pencil-square"></i>
+              <span>修改規格</span>
+            </button>
+          </div>
         </div>
         <div class="cart-item-action">
           <button style="background: none; border: none; color: var(--text-light); cursor: pointer; padding: 2px;" 
@@ -656,6 +1012,7 @@
     saveToSession(STORAGE_KEYS.CART, appState.cart);
     updateCartUI();
     renderCartItems();
+    resetUnsubmittedReminderTimer();
   }
 
   function removeCartItem(index) {
@@ -663,6 +1020,7 @@
     saveToSession(STORAGE_KEYS.CART, appState.cart);
     updateCartUI();
     renderCartItems();
+    resetUnsubmittedReminderTimer();
     showToast('已移除餐點');
   }
 
@@ -699,6 +1057,7 @@
 
     updateCartUI();
     updateHistoryBadge();
+    resetUnsubmittedReminderTimer();
     closeModal(DOM.cartModal);
 
     showToast('🎉 點單已成功送達廚房製作！');
@@ -727,15 +1086,15 @@
       DOM.historyOrdersContent.innerHTML = `
         <div style="text-align: center; padding: 50px 20px; color: var(--text-muted);">
           <i class="bi bi-receipt-cutoff" style="font-size: 42px; margin-bottom: 12px; display: inline-block; color: var(--border-light);"></i>
-          <p style="font-size: 15px; font-weight: 700;">目前尚無點單紀錄</p>
-          <p style="font-size: 12px; margin-top: 4px;">挑選餐點放入購物車並送出後，紀錄將即時顯示在此處。</p>
+          <p style="font-size: 15px; font-weight: 700;">目前尚無已送出的點單紀錄</p>
+          <p style="font-size: 12px; margin-top: 4px;">將餐點放入購物車後，記得點擊下方「去結帳 → 確認送出點單」，紀錄才會顯示在此處喔！</p>
         </div>
       `;
       return;
     }
 
     let cumulativeTotal = 0;
-    const batchesHTML = appState.orders.map((batch, idx) => {
+    const batchesHTML = appState.orders.map(batch => {
       cumulativeTotal += batch.subtotal;
       return `
         <div class="order-history-batch">
@@ -799,6 +1158,7 @@
       appState.orders = [];
       updateCartUI();
       updateHistoryBadge();
+      resetUnsubmittedReminderTimer();
       closeModal(DOM.historyModal);
       showToast('✨ 已重置為全新開桌狀態！');
     }
@@ -818,13 +1178,22 @@
   }
 
   let toastTimer = null;
-  function showToast(msg) {
+  function showToast(msg, type = 'success') {
     clearTimeout(toastTimer);
     DOM.toastText.textContent = msg;
+    if (DOM.toastIcon) {
+      if (type === 'warn') {
+        DOM.toastIcon.className = 'bi bi-exclamation-triangle-fill';
+        DOM.toastIcon.style.color = '#fbbf24';
+      } else {
+        DOM.toastIcon.className = 'bi bi-check-circle-fill';
+        DOM.toastIcon.style.color = '#4ade80';
+      }
+    }
     DOM.toastMsg.classList.add('show');
     toastTimer = setTimeout(() => {
       DOM.toastMsg.classList.remove('show');
-    }, 2400);
+    }, 3000);
   }
 
   // 啟動應用程式

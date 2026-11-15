@@ -272,6 +272,7 @@
     DOM.specOptionsContainer.addEventListener('click', (e) => {
       const lockedLabel = e.target.closest('.option-label.disabled-limit');
       if (lockedLabel) {
+        // 阻止點擊未勾選且被鎖定的項目，並提示使用者先取消已選項目
         e.preventDefault();
         e.stopPropagation();
         const groupEl = lockedLabel.closest('.option-group');
@@ -280,7 +281,7 @@
         const max = group?.maxSelect || 2;
         showToast(`⚠️ 此區最多只能選 ${max} 項！請先點一下「已打勾的項目」取消，才能改選其他餐點喔！`, 'warn');
       }
-    });
+    }, true); // 使用 Capture 模式確保在 input 觸發前攔截
 
     // 規格彈窗內選項異動（radio / checkbox change）
     DOM.specOptionsContainer.addEventListener('change', handleSpecOptionChange);
@@ -541,7 +542,7 @@
       const visible = isGroupVisible(group);
       const selectedIndices = appState.currentSpecSelections[group.id] || [];
       const badge = getGroupBadgeInfo(group, selectedIndices);
-      const isMaxReached = (group.type === 'checkbox' && group.maxSelect && selectedIndices.length >= group.maxSelect);
+      const isMaxReached = Boolean(group.type === 'checkbox' && group.maxSelect && selectedIndices.length >= group.maxSelect);
 
       return `
         <div class="option-group ${visible ? '' : 'hidden-conditional'}" 
@@ -555,22 +556,23 @@
           ${group.hint ? `<div class="group-hint">${group.hint}</div>` : ''}
           <div class="option-pill-grid">
             ${group.options.map((opt, optIdx) => {
-        const isChecked = selectedIndices.includes(optIdx);
-        const isLocked = (!isChecked && isMaxReached);
-        return `
+              const isChecked = selectedIndices.includes(optIdx);
+              const isLocked = Boolean(!isChecked && isMaxReached);
+              return `
                 <label class="option-label ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled-limit' : ''}" data-opt-idx="${optIdx}">
                   <div style="display: flex; align-items: center; flex-wrap: wrap;">
                     <input type="${group.type}" 
                            name="spec_grp_${group.id}" 
                            value="${optIdx}" 
-                           ${isChecked ? 'checked' : ''} />
+                           ${isChecked ? 'checked' : ''}
+                           ${isLocked ? 'disabled' : ''} />
                     <span>${opt.name}</span>
                     ${isLocked ? `<span class="limit-lock-tag">已滿上限</span>` : ''}
                   </div>
                   ${opt.price > 0 ? `<span class="option-price-diff">+NT$ ${opt.price}</span>` : `<span style="font-size: 11.5px; color: var(--text-light);">+$0</span>`}
                 </label>
               `;
-      }).join('')}
+            }).join('')}
           </div>
           <div class="validation-error-container" id="spec-err-${group.id}"></div>
         </div>
@@ -650,15 +652,18 @@
 
       // 2. 更新選項勾選樣式與複選上限鎖定狀態
       const selectedIndices = appState.currentSpecSelections[group.id] || [];
-      const isMaxReached = (group.type === 'checkbox' && group.maxSelect && selectedIndices.length >= group.maxSelect);
+      const isMaxReached = Boolean(group.type === 'checkbox' && group.maxSelect && selectedIndices.length >= group.maxSelect);
 
       groupEl.querySelectorAll('.option-label').forEach(lbl => {
         const idx = parseInt(lbl.dataset.optIdx, 10);
         const inp = lbl.querySelector('input');
         const isChecked = selectedIndices.includes(idx);
-        const isLocked = (!isChecked && isMaxReached);
+        const isLocked = Boolean(!isChecked && isMaxReached);
 
-        if (inp) inp.checked = isChecked;
+        if (inp) {
+          inp.checked = isChecked;
+          inp.disabled = isLocked;
+        }
         lbl.classList.toggle('checked', isChecked);
         lbl.classList.toggle('disabled-limit', isLocked);
 
